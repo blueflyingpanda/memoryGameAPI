@@ -1,0 +1,211 @@
+basePath: /
+definitions:
+  main.Player:
+    properties:
+      login:
+        type: string
+      score:
+        type: integer
+    type: object
+  main.PlayerRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  main.ScoreRequest:
+    properties:
+      score:
+        type: integer
+    required:
+    - score
+    type: object
+  main.User:
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for player management.
+  title: Player API
+  version: "1.0"
+paths:
+  /ping:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Ping test endpoint
+      tags:
+      - ping
+  /players:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Player'
+            type: array
+      summary: List all players
+      tags:
+      - players
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Player data
+        in: body
+        name: player
+        required: true
+        schema:
+          $ref: '#/definitions/main.PlayerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Player'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a new player
+      tags:
+      - players
+  /players/{login}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login
+        in: path
+        name: login
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Player'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a player by login
+      tags:
+      - players
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login
+        in: path
+        name: login
+        required: true
+        type: string
+      - description: Score data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.ScoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a player's score
+      tags:
+      - players
+  /users:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.User'
+            type: array
+      summary: List all users
+      tags:
+      - users
+  /users/{username}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.User'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a user by username
+      tags:
+      - users
+schemes:
+- http
+swagger: "2.0"
