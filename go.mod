@@ -1,4 +1,4 @@
-module InterfacesAPI
+module memoryGameAPI
 
 go 1.22
 

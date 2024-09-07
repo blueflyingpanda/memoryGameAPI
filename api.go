@@ -1,12 +1,12 @@
 package main
 
 import (
-	_ "InterfacesAPI/docs"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "memoryGameAPI/docs"
 	"net/http"
 )
 
