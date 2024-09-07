@@ -38,6 +38,41 @@ info:
   title: Player API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a player and returns a JWT token in an HTTP-only
+        cookie.
+      parameters:
+      - description: Player login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.PlayerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid input or incorrect credentials
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Log in a player
   /ping:
     get:
       produces:
@@ -129,7 +164,14 @@ paths:
     put:
       consumes:
       - application/json
+      description: Updates the score for a player. Requires JWT authentication.
       parameters:
+      - description: Bearer Token
+        format: '"Bearer <token>"'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Login
         in: path
         name: login
@@ -145,18 +187,30 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
             additionalProperties: true
             type: object
         "400":
-          description: Bad Request
+          description: Invalid input
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized or missing token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Unauthorized access
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             additionalProperties:
               type: string

@@ -8,6 +8,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "memoryGameAPI/docs"
 	"net/http"
+	"strings"
 )
 
 // ListUsers godoc
@@ -131,16 +132,37 @@ type ScoreRequest struct {
 // UpdatePlayer godoc
 // @Summary Update a player's score
 // @Tags players
+// @Description Updates the score for a player. Requires JWT authentication.
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer Token" format("Bearer <token>")
 // @Param login path string true "Login"
 // @Param body body ScoreRequest true "Score data"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Success 200 {object} map[string]interface{} "Success"
+// @Failure 400 {object} map[string]string "Invalid input"
+// @Failure 401 {object} map[string]string "Unauthorized or missing token"
+// @Failure 403 {object} map[string]string "Unauthorized access"
+// @Failure 500 {object} map[string]string "Internal server error"
 // @Router /players/{login} [put]
 func UpdatePlayer(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization header"})
+		return
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	claims, err := VerifyToken(tokenString)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+		return
+	}
+
 	login := c.Param("login")
+	if login != claims.Login {
+		c.IndentedJSON(http.StatusForbidden, gin.H{"error": "Unauthorized access"})
+		return
+	}
 
 	var json ScoreRequest
 
@@ -168,6 +190,50 @@ func UpdatePlayer(c *gin.Context) {
 	})
 }
 
+// LoginPlayer handles the login process and sets the JWT token in a Authorization header
+// @Summary Log in a player
+// @Description Authenticates a player and returns a JWT token in an HTTP-only cookie.
+// @Accept json
+// @Produce json
+// @Param request body PlayerRequest true "Player login request"
+// @Success 200 {object} map[string]string "Login successful"
+// @Failure 400 {object} map[string]string "Invalid input or incorrect credentials"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /login [post]
+func LoginPlayer(c *gin.Context) {
+	var json PlayerRequest
+
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	if !IsValidSHA256Hash(json.Password) {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "You gotta be kidding. Did you really just sent an unhashed password? 😂 Try SHA256"})
+		return
+	}
+
+	player, err := GetPlayerByLogin(json.Login)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if player.Password != json.Password {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Wrong password"})
+		return
+	}
+
+	token, err := GenerateJWT(player.Login)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+token)
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Login successful"})
+}
+
 // Ping godoc
 // @Summary Ping test endpoint
 // @Tags ping
@@ -190,6 +256,8 @@ func initAPI(port int) {
 	router.GET("/players/:login", GetPlayer)
 	router.POST("/players", AddPlayer)
 	router.PUT("/players/:login", UpdatePlayer)
+
+	router.POST("/login", LoginPlayer)
 
 	// Swagger documentation route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
