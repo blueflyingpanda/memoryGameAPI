@@ -230,8 +230,9 @@ func LoginPlayer(c *gin.Context) {
 		return
 	}
 
-	c.Header("Authorization", "Bearer "+token)
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Login successful"})
+	bearer := "Bearer " + token
+	c.Header("Authorization", bearer)
+	c.IndentedJSON(http.StatusOK, gin.H{"message": bearer})
 }
 
 // Ping godoc
