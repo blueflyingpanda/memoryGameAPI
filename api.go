@@ -3,12 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "memoryGameAPI/docs"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // ListUsers godoc
@@ -190,7 +192,7 @@ func UpdatePlayer(c *gin.Context) {
 	})
 }
 
-// LoginPlayer handles the login process and sets the JWT token in a Authorization header
+// LoginPlayer handles the login process and sets the JWT token in Authorization header
 // @Summary Log in a player
 // @Description Authenticates a player and returns a JWT token in an HTTP-only cookie.
 // @Accept json
@@ -247,6 +249,15 @@ func Ping(c *gin.Context) {
 
 func initAPI(port int) {
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "POST", "GET", "OPTIONS", "DELETE"},
+		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	router.GET("/ping", Ping)
 
