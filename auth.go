@@ -9,7 +9,6 @@ import (
 )
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET")) // Replace with a strong secret
-var tokenExpiry = time.Hour * 24
 
 type JWTClaims struct {
 	Login string `json:"login"`
@@ -31,7 +30,7 @@ func VerifyToken(tokenString string) (*JWTClaims, error) {
 }
 
 // GenerateJWT generates a JWT token for a given user
-func GenerateJWT(login string) (string, error) {
+func GenerateJWT(login string, tokenExpiry time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"login": login,
 		"exp":   time.Now().Add(tokenExpiry).Unix(),

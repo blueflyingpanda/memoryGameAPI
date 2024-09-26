@@ -9,7 +9,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "memoryGameAPI/docs"
 	"net/http"
-	"strings"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -147,13 +148,12 @@ type ScoreRequest struct {
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /players/{login} [put]
 func UpdatePlayer(c *gin.Context) {
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization header"})
+	tokenString, err := c.Cookie("Authorization")
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "Missing authorization cookie"})
 		return
 	}
 
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 	claims, err := VerifyToken(tokenString)
 	if err != nil {
 		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
@@ -226,15 +226,22 @@ func LoginPlayer(c *gin.Context) {
 		return
 	}
 
-	token, err := GenerateJWT(player.Login)
+	expirationStr := os.Getenv("EXPIRATION_TIME")
+
+	expirationMinutes, _ := strconv.Atoi(expirationStr)
+	var tokenExpiry = time.Minute * time.Duration(expirationMinutes)
+	tokenExpirySeconds := int(tokenExpiry.Seconds())
+
+	token, err := GenerateJWT(player.Login, tokenExpiry)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	bearer := "Bearer " + token
-	c.Header("Authorization", bearer)
-	c.IndentedJSON(http.StatusOK, gin.H{"message": bearer})
+	domain := c.Request.Host
+
+	c.SetCookie("Authorization", token, tokenExpirySeconds*2, "/", domain, true, true)
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "success"})
 }
 
 // Ping godoc

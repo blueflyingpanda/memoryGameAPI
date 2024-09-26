@@ -49,6 +49,3 @@ func main() {
 
 	initAPI(8080)
 }
-
-// TODO: SetPlayerScore only for user that provided right creds
-// TODO: Login with jwt
