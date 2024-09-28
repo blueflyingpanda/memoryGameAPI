@@ -240,7 +240,9 @@ func LoginPlayer(c *gin.Context) {
 
 	domain := c.Request.Host
 
+	c.SetSameSite(http.SameSiteNoneMode) // otherwise cross-site response will block setting the cookie
 	c.SetCookie("Authorization", token, tokenExpirySeconds*2, "/", domain, true, true)
+
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "success"})
 }
 
@@ -258,7 +260,7 @@ func initAPI(port int) {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{"http://127.0.0.1:5500"},
 		AllowMethods:     []string{"PUT", "POST", "GET", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
