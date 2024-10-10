@@ -9,7 +9,6 @@ import (
 )
 
 var BotDB *gorm.DB
-var DB *gorm.DB
 
 // @title           Player API
 // @version         1.0
@@ -34,18 +33,6 @@ func main() {
 	}
 
 	BotDB = initDB(botDBHost, botDBName, botDBUser, botDBPass, botDBPort)
-
-	DBHost := os.Getenv("DB_HOST")
-	DBName := os.Getenv("DB_NAME")
-	DBUser := os.Getenv("DB_USER")
-	DBPass := os.Getenv("DB_PASS")
-
-	DBPort, err := strconv.Atoi(os.Getenv("DB_PORT"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	DB = initDB(DBHost, DBName, DBUser, DBPass, DBPort)
 
 	initAPI(8080)
 }

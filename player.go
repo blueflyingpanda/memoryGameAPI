@@ -8,7 +8,7 @@ import (
 
 func GetAllPlayers() []Player {
 	var players []Player
-	result := DB.Table("players").Find(&players)
+	result := BotDB.Table("players").Find(&players)
 	if result.Error != nil {
 		log.Fatal(result.Error)
 	}
@@ -17,7 +17,7 @@ func GetAllPlayers() []Player {
 
 func GetPlayerByLogin(login string) (Player, error) {
 	var player Player
-	result := DB.Where("login = ?", login).First(&player)
+	result := BotDB.Where("login = ?", login).First(&player)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return player, &NoSuchPlayerError{login}
@@ -51,7 +51,7 @@ func CreatePlayer(login, password string) (Player, error) {
 		Password: password,
 	}
 
-	result := DB.Create(&newPlayer)
+	result := BotDB.Create(&newPlayer)
 	if result.Error != nil {
 		return Player{}, result.Error
 	}
@@ -64,7 +64,7 @@ func SetPlayerScore(login string, newScore uint) (uint, error) {
 
 	var player Player
 
-	result := DB.Where("login = ?", login).First(&player)
+	result := BotDB.Where("login = ?", login).First(&player)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return 0, &NoSuchPlayerError{login}
@@ -77,7 +77,7 @@ func SetPlayerScore(login string, newScore uint) (uint, error) {
 	if needsUpdate {
 		player.Score = newScore
 
-		result = DB.Save(&player)
+		result = BotDB.Save(&player)
 		if result.Error != nil {
 			return 0, result.Error
 		}
