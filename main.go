@@ -13,9 +13,9 @@ var BotDB *gorm.DB
 // @title           Player API
 // @version         1.0
 // @description     This is a sample server for player management.
-// @host      localhost:8080
+// @host      d5dsv84kj5buag61adme.apigw.yandexcloud.net
 // @BasePath  /
-// @schemes http
+// @schemes https
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
