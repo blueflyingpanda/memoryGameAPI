@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -259,8 +260,10 @@ func Ping(c *gin.Context) {
 func initAPI(port int) {
 	router := gin.Default()
 
+	allowedHostsEnv := os.Getenv("ALLOWED_HOSTS")
+
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:5500"},
+		AllowOrigins:     strings.Split(allowedHostsEnv, ","),
 		AllowMethods:     []string{"PUT", "POST", "GET", "OPTIONS", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
